@@ -230,8 +230,8 @@ ShopTab:Dropdown({
 local AutoBuy = false
 local SelectedItem = nil
 local SelectedAmount = 1
-local LoopInterval = 0.3      -- default interval loop (detik)
-local ItemInterval = 0.15     -- default interval per pembelian (detik)
+local LoopIntervalMin = 0.005   -- default 0.005 menit = 0.3 detik
+local ItemIntervalMin = 0.0025  -- default 0.0025 menit = 0.15 detik
 
 -- TOGGLE AUTO BUY
 ShopTab:Toggle({
@@ -245,54 +245,55 @@ ShopTab:Toggle({
     end
 })
 
--- INPUT UNTUK LOOP INTERVAL
+-- INPUT LOOP INTERVAL (MENIT)
 ShopTab:Input({
-    Title = "Loop Interval (detik)",
-    Desc = "Atur jeda waktu antara setiap loop Auto Buy",
-    Value = tostring(LoopInterval),
+    Title = "Loop Interval (menit)",
+    Desc = "Jeda waktu antara setiap loop Auto Buy",
+    Value = tostring(LoopIntervalMin),
     InputIcon = "clock",
     Type = "Input",
-    Placeholder = "Contoh: 0.3",
+    Placeholder = "Contoh: 0.005 (≈0.3 detik)",
     Callback = function(input)
         local num = tonumber(input)
         if num and num > 0 then
-            LoopInterval = num
-            print("Loop interval diatur ke " .. LoopInterval .. " detik")
+            LoopIntervalMin = num
+            print("Loop interval diatur ke " .. LoopIntervalMin .. " menit")
         else
             print("Input tidak valid!")
         end
     end
 })
 
--- INPUT UNTUK ITEM INTERVAL
+-- INPUT ITEM INTERVAL (MENIT)
 ShopTab:Input({
-    Title = "Item Interval (detik)",
-    Desc = "Atur jeda waktu antara pembelian tiap item",
-    Value = tostring(ItemInterval),
+    Title = "Item Interval (menit)",
+    Desc = "Jeda waktu antara pembelian tiap item",
+    Value = tostring(ItemIntervalMin),
     InputIcon = "clock",
     Type = "Input",
-    Placeholder = "Contoh: 0.15",
+    Placeholder = "Contoh: 0.0025 (≈0.15 detik)",
     Callback = function(input)
         local num = tonumber(input)
         if num and num > 0 then
-            ItemInterval = num
-            print("Item interval diatur ke " .. ItemInterval .. " detik")
+            ItemIntervalMin = num
+            print("Item interval diatur ke " .. ItemIntervalMin .. " menit")
         else
             print("Input tidak valid!")
         end
     end
 })
 
--- LOOP AUTO BUY DENGAN INTERVAL DINAMIS
+-- LOOP AUTO BUY DENGAN INTERVAL DINAMIS (MENIT)
 task.spawn(function()
-    while task.wait(LoopInterval) do
-        if not AutoBuy then continue end
-        if not SelectedItem or SelectedAmount <= 0 then continue end
+    while true do
+        task.wait(LoopIntervalMin * 60)  -- konversi menit ke detik
 
-        for i = 1, SelectedAmount do
-            if not AutoBuy then break end
-            BuyItem(SelectedItem)
-            task.wait(ItemInterval)
+        if AutoBuy and SelectedItem and SelectedAmount > 0 then
+            for i = 1, SelectedAmount do
+                if not AutoBuy then break end
+                BuyItem(SelectedItem)
+                task.wait(ItemIntervalMin * 60)  -- konversi menit ke detik
+            end
         end
     end
 end)
@@ -350,6 +351,7 @@ MiscTab:Slider({
         WalkSpeedValue = v
     end
 })
+
 
 
 
