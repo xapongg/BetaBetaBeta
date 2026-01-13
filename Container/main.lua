@@ -226,6 +226,55 @@ ShopTab:Dropdown({
     end
 })
 
+-- BUTTON AUTO BUY
+ShopTab:Button({
+    Title = "Buy Container",
+    Desc = "Beli sesuai jumlah instant",
+    Locked = false,
+    Callback = function()
+        for i = 1, SelectedAmount do
+            BuyItem(SelectedItem)
+            task.wait(0.15)
+        end
+    end
+})
+
+-- VARIABLE INTERVAL (DETIK)
+local AutoBuyInterval = 0 -- default 0 (langsung)
+
+-- INPUT INTERVAL (MENIT)
+ShopTab:Input({
+    Title = "Auto Buy Interval (menit)",
+    Desc = "0 = langsung, 1 = 1 menit, 0.5 = 30 detik",
+    Value = "0",
+    InputIcon = "clock",
+    Type = "Input",
+    Placeholder = "Masukkan menit",
+    Callback = function(input)
+        local num = tonumber(input)
+        if num and num >= 0 then
+            AutoBuyInterval = num * 60 -- menit → detik
+            print("Auto Buy interval:", AutoBuyInterval, "detik")
+        end
+    end
+})
+
+-- LOOP AUTO BUY (INTERVAL CUSTOM)
+task.spawn(function()
+    while true do
+        task.wait(AutoBuyInterval)
+
+        if not AutoBuy then continue end
+        if not SelectedItem or SelectedAmount <= 0 then continue end
+
+        for i = 1, SelectedAmount do
+            if not AutoBuy then break end
+            BuyItem(SelectedItem)
+            task.wait(0.15)
+        end
+    end
+end)
+
 -- TOGGLE AUTO BUY 
 ShopTab:Toggle({ 
     Title = "Auto Buy Container", 
@@ -237,19 +286,6 @@ ShopTab:Toggle({
         AutoBuy = v 
     end 
 }) 
-
--- LOOP AUTO BUY 3 mnt sekali
-task.spawn(function() 
-    while task.wait(180) do 
-        if not AutoBuy then continue end 
-        if not SelectedItem or SelectedAmount <= 0 then continue end 
-            
-        for i = 1, SelectedAmount do 
-            if not AutoBuy then break end BuyItem(SelectedItem) task.wait(0.15) 
-        end
-    end
-end)
-
 
 --------------------------------------------------
 --// UI MAIN
@@ -303,6 +339,7 @@ MiscTab:Slider({
         WalkSpeedValue = v
     end
 })
+
 
 
 
