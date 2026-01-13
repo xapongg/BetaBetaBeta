@@ -226,74 +226,26 @@ ShopTab:Dropdown({
     end
 })
 
--- VARIABLES
-local AutoBuy = false
-local SelectedItem = nil
-local SelectedAmount = 1
-local LoopIntervalMin = 0.005   -- default 0.005 menit = 0.3 detik
-local ItemIntervalMin = 0.0025  -- default 0.0025 menit = 0.15 detik
+-- TOGGLE AUTO BUY 
+ShopTab:Toggle({ 
+    Title = "Auto Buy Container", 
+    Desc = "Auto beli container (loop)", 
+    Icon = "repeat", 
+    Type = "Checkbox", 
+    Value = false, 
+    Callback = function(v) 
+        AutoBuy = v 
+    end 
+}) 
 
--- TOGGLE AUTO BUY
-ShopTab:Toggle({
-    Title = "Auto Buy Container",
-    Desc = "Auto beli container (loop)",
-    Icon = "repeat",
-    Type = "Checkbox",
-    Value = false,
-    Callback = function(v)
-        AutoBuy = v
-    end
-})
-
--- INPUT LOOP INTERVAL (MENIT)
-ShopTab:Input({
-    Title = "Loop Interval (menit)",
-    Desc = "Jeda waktu antara setiap loop Auto Buy",
-    Value = tostring(LoopIntervalMin),
-    InputIcon = "clock",
-    Type = "Input",
-    Placeholder = "Contoh: 0.005 (≈0.3 detik)",
-    Callback = function(input)
-        local num = tonumber(input)
-        if num and num > 0 then
-            LoopIntervalMin = num
-            print("Loop interval diatur ke " .. LoopIntervalMin .. " menit")
-        else
-            print("Input tidak valid!")
-        end
-    end
-})
-
--- INPUT ITEM INTERVAL (MENIT)
-ShopTab:Input({
-    Title = "Item Interval (menit)",
-    Desc = "Jeda waktu antara pembelian tiap item",
-    Value = tostring(ItemIntervalMin),
-    InputIcon = "clock",
-    Type = "Input",
-    Placeholder = "Contoh: 0.0025 (≈0.15 detik)",
-    Callback = function(input)
-        local num = tonumber(input)
-        if num and num > 0 then
-            ItemIntervalMin = num
-            print("Item interval diatur ke " .. ItemIntervalMin .. " menit")
-        else
-            print("Input tidak valid!")
-        end
-    end
-})
-
--- LOOP AUTO BUY DENGAN INTERVAL DINAMIS (MENIT)
-task.spawn(function()
-    while true do
-        task.wait(LoopIntervalMin * 60)  -- konversi menit ke detik
-
-        if AutoBuy and SelectedItem and SelectedAmount > 0 then
-            for i = 1, SelectedAmount do
-                if not AutoBuy then break end
-                BuyItem(SelectedItem)
-                task.wait(ItemIntervalMin * 60)  -- konversi menit ke detik
-            end
+-- LOOP AUTO BUY 
+task.spawn(function() 
+    while task.wait(0.3) do 
+        if not AutoBuy then continue end 
+        if not SelectedItem or SelectedAmount <= 0 then continue end 
+            
+        for i = 1, SelectedAmount do 
+            if not AutoBuy then break end BuyItem(SelectedItem) task.wait(0.15) 
         end
     end
 end)
@@ -351,6 +303,7 @@ MiscTab:Slider({
         WalkSpeedValue = v
     end
 })
+
 
 
 
