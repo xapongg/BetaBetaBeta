@@ -365,37 +365,3 @@ MiscTab:Toggle({
         end
     end
 })
-
---------------------------------------------------
--- BUTTON OPEN COMPUTER MENU (FIXED)
---------------------------------------------------
-MiscTab:Button({
-    Title = "Open Computer Menu",
-    Desc = "Buka komputer dari mana saja",
-    Icon = "monitor",
-    Callback = function()
-        local ComputerSession = require(
-            game.Players.LocalPlayer
-                .PlayerScripts
-                .Controllers
-                .Computer
-                .ComputerSession
-        )
-
-        if not ComputerSession.ActiveSession then
-            ComputerSession.new()
-        end
-    end
-})
-
-
-
-
-
-
-
-
-
-
-
-
