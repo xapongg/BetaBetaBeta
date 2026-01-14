@@ -369,21 +369,25 @@ MiscTab:Toggle({
 --------------------------------------------------
 -- BUTTON OPEN COMPUTER MENU (FIXED)
 --------------------------------------------------
-local BindableCore = require(
-    game:GetService("ReplicatedStorage")
-        .Modules
-        .Packages
-        .BindableCore
-)
-
 MiscTab:Button({
     Title = "Open Computer Menu",
     Desc = "Buka komputer dari mana saja",
     Icon = "monitor",
     Callback = function()
-        BindableCore:Fire("OPEN_COMPUTER_MENU")
+        local ComputerSession = require(
+            game.Players.LocalPlayer
+                .PlayerScripts
+                .Controllers
+                .Computer
+                .ComputerSession
+        )
+
+        if not ComputerSession.ActiveSession then
+            ComputerSession.new()
+        end
     end
 })
+
 
 
 
