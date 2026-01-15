@@ -46,17 +46,25 @@ local WalkSpeedValue = 16
 --// UTIL: ITEM DI AREA CONTAINER SAJA
 --------------------------------------------------
 local function IsItemInContainerArea(item, container)
-    local part = item:IsA("BasePart") and item or item:FindFirstChildWhichIsA("BasePart")
+    local part =
+        item:IsA("BasePart") and item
+        or item:FindFirstChildWhichIsA("BasePart")
+
     if not part then return false end
 
     local cf, size = container:GetBoundingBox()
     local half = size / 2
+
+    -- 🧠 hitung setengah size item
+    local itemHalf = part.Size / 2
+
     local rel = cf:PointToObjectSpace(part.Position)
 
-    return math.abs(rel.X) <= half.X
-       and math.abs(rel.Y) <= half.Y
-       and math.abs(rel.Z) <= half.Z
+    return math.abs(rel.X) <= (half.X + itemHalf.X)
+       and math.abs(rel.Y) <= (half.Y + itemHalf.Y)
+       and math.abs(rel.Z) <= (half.Z + itemHalf.Z)
 end
+
 
 --------------------------------------------------
 --// AUTO OPEN CONTAINER
