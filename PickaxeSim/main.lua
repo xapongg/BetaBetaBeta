@@ -77,8 +77,8 @@ local MainTab = Window:Tab({
 --------------------------------------------------
 --// STATES
 --------------------------------------------------
-local AutoBuy = false
-local AntiAFK = false
+local AutoBuy = true
+local AntiAFK = true
 
 --------------------------------------------------
 --// ANTI AFK (METODE BARU)
@@ -105,7 +105,7 @@ end
 MainTab:Toggle({
     Title = "Auto Buy Event Merchant",
     Desc = "Auto beli Slot 1 - 3",
-    Default = false,
+    Default = true,
     Callback = function(state)
         AutoBuy = state
         task.spawn(function()
