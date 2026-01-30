@@ -4,10 +4,10 @@ local WindUI = loadstring(game:HttpGet(
 ))()
 
 local Window = WindUI:CreateWindow({
-    Title = "Container RNG",
+    Title = "Pickaxe Simulator",
     Icon = "package", -- lucide icon
     Author = "Xapongg",
-    Folder = "ContainerRNG",
+    Folder = "PickaxeSimulator",
     
     -- ↓ This all is Optional. You can remove it.
     Size = UDim2.fromOffset(580, 460),
