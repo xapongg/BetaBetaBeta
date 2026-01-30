@@ -8,7 +8,7 @@ local Window = WindUI:CreateWindow({
     Icon = "package", -- lucide icon
     Author = "Xapongg",
     Folder = "PickaxeSimulator",
-    
+
     -- ↓ This all is Optional. You can remove it.
     Size = UDim2.fromOffset(580, 460),
     MinSize = Vector2.new(560, 350),
@@ -20,7 +20,7 @@ local Window = WindUI:CreateWindow({
     BackgroundImageTransparency = 0.42,
     HideSearchBar = true,
     ScrollBarEnabled = false,
-    
+
     -- ↓ Optional. You can remove it.
     --[[ You can set 'rbxassetid://' or video to Background.
         'rbxassetid://':
@@ -28,7 +28,7 @@ local Window = WindUI:CreateWindow({
         Video:
             Background = "video:YOUR-RAW-LINK-TO-VIDEO.webm", -- video 
     --]]
-    
+
     -- ↓ Optional. You can remove it.
     User = {
         Enabled = true,
