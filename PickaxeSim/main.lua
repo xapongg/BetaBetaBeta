@@ -59,6 +59,7 @@ Window:EditOpenButton({
 local Players = game:GetService("Players")
 local VirtualUser = game:GetService("VirtualUser")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 
 local LocalPlayer = Players.LocalPlayer
 local Remote = ReplicatedStorage
@@ -81,12 +82,36 @@ local AutoBuy = true
 local AntiAFK = true
 
 --------------------------------------------------
---// ANTI AFK (METODE BARU)
+--// METHOD 1 : IDLED (BASE)
 --------------------------------------------------
 LocalPlayer.Idled:Connect(function()
     if AntiAFK then
         VirtualUser:CaptureController()
         VirtualUser:ClickButton2(Vector2.new(0, 0))
+    end
+end)
+
+--------------------------------------------------
+--// METHOD 2 : LOOP INPUT (ANTI CUSTOM AFK)
+--------------------------------------------------
+task.spawn(function()
+    while task.wait(30) do -- tiap 30 detik
+        if AntiAFK then
+            VirtualUser:CaptureController()
+            VirtualUser:ClickButton2(Vector2.new(0, 0))
+        end
+    end
+end)
+
+--------------------------------------------------
+--// METHOD 3 : CAMERA MICRO MOVE (EXTREME)
+--------------------------------------------------
+task.spawn(function()
+    while task.wait(60) do -- tiap 60 detik
+        if AntiAFK and workspace.CurrentCamera then
+            local cam = workspace.CurrentCamera
+            cam.CFrame = cam.CFrame * CFrame.Angles(0, math.rad(0.05), 0)
+        end
     end
 end)
 
