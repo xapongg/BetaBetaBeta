@@ -66,22 +66,42 @@ local Remote = ReplicatedStorage
     :WaitForChild("Remotes")
     :WaitForChild("__remotefunction")
 
+--------------------------------------------------
 --// TAB
-local MainTab = Window:Tab({Title = "Main", Icon = "home" })
-local MiscTab = Window:Tab({ Title = "Misc", Icon = "settings" })
+--------------------------------------------------
+local MainTab = Window:Tab({
+    Title = "Main",
+    Icon = "home"
+})
 
---// State
-local AutoBuy = true
+--------------------------------------------------
+--// STATES
+--------------------------------------------------
+local AutoBuy = false
 local AntiAFK = false
 
---// Buy function
+--------------------------------------------------
+--// ANTI AFK (METODE BARU)
+--------------------------------------------------
+LocalPlayer.Idled:Connect(function()
+    if AntiAFK then
+        VirtualUser:CaptureController()
+        VirtualUser:ClickButton2(Vector2.new(0, 0))
+    end
+end)
+
+--------------------------------------------------
+--// BUY FUNCTION
+--------------------------------------------------
 local function Buy(slot)
     pcall(function()
         Remote:InvokeServer("Buy Event Merchant", slot)
     end)
 end
 
---// TOGGLE
+--------------------------------------------------
+--// TOGGLE AUTO BUY
+--------------------------------------------------
 MainTab:Toggle({
     Title = "Auto Buy Event Merchant",
     Desc = "Auto beli Slot 1 - 3",
@@ -102,25 +122,13 @@ MainTab:Toggle({
 })
 
 --------------------------------------------------
---// ANTI AFK
+--// TOGGLE ANTI AFK
 --------------------------------------------------
-local VirtualUser = game:GetService("VirtualUser")
-
-game:GetService("Players").LocalPlayer.Idled:Connect(function()
-    if AntiAFK then
-        VirtualUser:Button2Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
-        task.wait(1)
-        VirtualUser:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
-    end
-end)
-
-MiscTab:Toggle({
+MainTab:Toggle({
     Title = "Anti AFK",
-    Desc = "Prevent idle kick (safe)",
-    Icon = "shield",
-    Type = "Checkbox",
-    Value = false,
-    Callback = function(v)
-        AntiAFK = v
+    Desc = "Anti kick AFK (VirtualUser method)",
+    Default = true,
+    Callback = function(state)
+        AntiAFK = state
     end
 })
