@@ -124,7 +124,7 @@ end
 --------------------------------------------------
 --// TOGGLE AUTO BUY
 --------------------------------------------------
-MainTab:Toggle({
+local AutoBuyToggle = MainTab:Toggle({
     Title = "Auto Buy Event Merchant",
     Desc = "Auto beli Slot 1 - 3",
     Default = false,
@@ -148,7 +148,7 @@ MainTab:Toggle({
 --------------------------------------------------
 --// TOGGLE AUTO CLAIM TIME REWARD
 --------------------------------------------------
-MainTab:Toggle({
+local AutoClaimToggle = MainTab:Toggle({
     Title = "Auto Claim Time Reward",
     Desc = "Auto claim reward waktu tersedia",
     Default = false,
@@ -165,10 +165,11 @@ MainTab:Toggle({
     end
 })
 
+
 --------------------------------------------------
 --// TOGGLE AUTO ROLL
 --------------------------------------------------
-MainTab:Toggle({
+local AutoRollToggle = MainTab:Toggle({
     Title = "Auto Roll",
     Desc = "Auto roll terus",
     Default = false,
@@ -188,7 +189,7 @@ MainTab:Toggle({
 --------------------------------------------------
 --// TOGGLE AUTO CLAIM DICE CHEST
 --------------------------------------------------
-MainTab:Toggle({
+local AutoChestToggle = MainTab:Toggle({
     Title = "Auto Claim Dice Chest",
     Desc = "Auto claim Dice Chest",
     Default = false,
@@ -204,6 +205,7 @@ MainTab:Toggle({
         end
     end
 })
+
 
 --------------------------------------------------
 --// DROPDOWN AND TOGGLE AUTO UPGRADE
@@ -294,3 +296,14 @@ MainTab:Toggle({
         end
     end
 })
+
+task.defer(function()
+    AutoBuyToggle:Set(true)
+    AutoClaimToggle:Set(true)
+    AutoRollToggle:Set(true)
+    AutoChestToggle:Set(true)
+    -- sengaja TIDAK:
+    -- AutoEventUpgradeToggle
+    -- AutoCraftToggle
+end)
+
