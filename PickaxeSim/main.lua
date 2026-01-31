@@ -222,7 +222,7 @@ MainTab:Dropdown({
         "Faster Event Merchant",
         "Better Event Stocks",
     },
-    Value = { "Auto Rolls" }, -- default selected
+    Value = {}, -- default selected
     Multi = true,
     AllowNone = true,
     Callback = function(option)
