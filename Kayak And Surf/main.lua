@@ -89,6 +89,19 @@ end
 
 --// State
 local walking = false
+local AntiAFK = false
+
+--// Anti AFK
+local VirtualUser = game:GetService("VirtualUser")
+
+game:GetService("Players").LocalPlayer.Idled:Connect(function()
+    if AntiAFK then
+        VirtualUser:Button2Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
+        task.wait(1)
+        VirtualUser:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
+    end
+end)
+
 
 --// Tab
 local MainTab = Window:Tab({
@@ -98,8 +111,8 @@ local MainTab = Window:Tab({
 
 --// Toggle
 MainTab:Toggle({
-    Title = "Auto",
-    Desc = "Kaya nih ajg",
+    Title = "Auto Walk Route (Spam A)",
+    Desc = "Spam A → Check → B → C → repeat",
     Default = false,
     Callback = function(state)
         walking = state
@@ -136,4 +149,14 @@ MainTab:Toggle({
     end
 })
 
+MainTab:Toggle({
+    Title = "Anti AFK",
+    Desc = "Prevent idle kick (safe)",
+    Icon = "shield",
+    Type = "Checkbox",
+    Value = false,
+    Callback = function(v)
+        AntiAFK = v
+    end
+})
 
