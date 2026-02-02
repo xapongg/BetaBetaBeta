@@ -3,6 +3,7 @@
 
 --// Services
 local Players = game:GetService("Players")
+local VIM = game:GetService("VirtualInputManager")
 local LocalPlayer = Players.LocalPlayer
 
 --// Wind UI
@@ -89,18 +90,7 @@ end
 
 --// State
 local walking = false
-local AntiAFK = false
-
---// Anti AFK
-local VirtualUser = game:GetService("VirtualUser")
-
-game:GetService("Players").LocalPlayer.Idled:Connect(function()
-    if AntiAFK then
-        VirtualUser:Button2Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
-        task.wait(1)
-        VirtualUser:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
-    end
-end)
+local AutoBoost = false
 
 
 --// Tab
@@ -111,8 +101,8 @@ local MainTab = Window:Tab({
 
 --// Toggle
 MainTab:Toggle({
-    Title = "Auto Walk Route (Spam A)",
-    Desc = "Spam A → Check → B → C → repeat",
+    Title = "Auto Money",
+    Desc = "Kaya nih Ajg",
     Default = false,
     Callback = function(state)
         walking = state
@@ -149,14 +139,35 @@ MainTab:Toggle({
     end
 })
 
+task.spawn(function()
+    while task.wait(0.2) do
+        if AutoBoost then
+            local gui = LocalPlayer.PlayerGui:FindFirstChild("Hud")
+            if gui then
+                local boost = gui.MidRaceBoost.BoostIcon
+                if boost and boost.AbsolutePosition then
+                    local pos = boost.AbsolutePosition
+                    local size = boost.AbsoluteSize
+
+                    -- klik TENGAH icon bulat
+                    local x = pos.X + size.X / 2
+                    local y = pos.Y + size.Y / 2
+
+                    VIM:SendMouseButtonEvent(x, y, 0, true, game, 1)
+                    task.wait(0.05)
+                    VIM:SendMouseButtonEvent(x, y, 0, false, game, 1)
+                end
+            end
+        end
+    end
+end)
+
 MainTab:Toggle({
-    Title = "Anti AFK",
-    Desc = "Prevent idle kick (safe)",
-    Icon = "shield",
-    Type = "Checkbox",
-    Value = false,
+    Title = "Auto Boost",
+    Desc = "Klik boost otomatis (anti block)",
+    Default = false,
     Callback = function(v)
-        AntiAFK = v
+        AutoBoost = v
     end
 })
 
