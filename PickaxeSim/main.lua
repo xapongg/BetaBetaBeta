@@ -56,8 +56,13 @@ Window:EditOpenButton({
 --------------------------------------------------
 --// SERVICES
 --------------------------------------------------
+local Players = game:GetService("Players")
+local VirtualUser = game:GetService("VirtualUser")
+local VIM = game:GetService("VirtualInputManager")
+local UIS = game:GetService("UserInputService")
+local LocalPlayer = Players.LocalPlayer
+local Camera = workspace.CurrentCamera
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-
 local Remote = ReplicatedStorage
     :WaitForChild("Paper")
     :WaitForChild("Remotes")
@@ -67,11 +72,19 @@ local Remote = ReplicatedStorage
 --// TAB
 --------------------------------------------------
 local MainTab = Window:Tab({Title = "Main", Icon = "home" })
+local EventTab = Window:Tab({Title = "Event", Icon = "Package" })
+local MiscTab = Window:Tab({Title = "Misc", Icon = "settings"})
 
 --------------------------------------------------
 --// STATES
 --------------------------------------------------
 local AutoBuy = false
+local AutoSell = false
+local AutoRebirth = false
+local SelectedRebirth = 1
+local AutoPickaxe = false
+local AutoMiner = false
+local AutoBuyEvent = false
 local AutoClaimTime = false
 local AutoRoll = false
 local AutoChest = false
@@ -79,13 +92,29 @@ local AutoEventUpgrade = false
 local SelectedUpgrades = {}
 local AutoCraft = false
 local SelectedDice = {}
+local AutoLuckyBlock = false
+local AntiAFK = false
+local IdleConn
+
 
 --------------------------------------------------
 --// FUNCTIONS
 --------------------------------------------------
 local function Buy(slot)
     pcall(function()
-        Remote:InvokeServer("Buy Event Merchant", slot)
+        Remote:InvokeServer("Buy Merchant", slot)
+    end)
+end
+
+local function Sell()
+    pcall(function()
+        Remote:InvokeServer("Sell All Ores")
+    end)
+end
+
+local function Rebirth(amount)
+    pcall(function()
+        Remote:InvokeServer("Rebirth", amount)
     end)
 end
 
@@ -95,9 +124,27 @@ local function ClaimTimeReward()
     end)
 end
 
+local function BuyPickaxe()
+    pcall(function()
+        Remote:InvokeServer("Buy Pickaxe")
+    end)
+end
+
+local function BuyMiner()
+    pcall(function()
+        Remote:InvokeServer("Buy Miner")
+    end)
+end
+
 local function Roll()
     pcall(function()
         Remote:InvokeServer("Roll")
+    end)
+end
+
+local function BuyEvent(slot)
+    pcall(function()
+        Remote:InvokeServer("Buy Event Merchant", slot)
     end)
 end
 
@@ -119,25 +166,143 @@ local function CraftDice(diceName)
     end)
 end
 
+local function ClaimAllLuckyBlocks()
+    local objects = workspace:FindFirstChild("Objects")
+    if not objects then return end
 
+    for _, v in pairs(objects:GetChildren()) do
+        local id
+
+        -- attribute
+        if v:GetAttribute("Id") then
+            id = v:GetAttribute("Id")
+
+        -- StringValue
+        elseif v:FindFirstChild("Id") and v.Id:IsA("StringValue") then
+            id = v.Id.Value
+
+        elseif v:FindFirstChild("UUID") and v.UUID:IsA("StringValue") then
+            id = v.UUID.Value
+
+        -- fallback name
+        elseif typeof(v.Name) == "string" and #v.Name > 10 then
+            id = v.Name
+        end
+
+        if id then
+            pcall(function()
+                Remote:InvokeServer("Claim LuckyBlock", id)
+            end)
+            task.wait(0.1)
+        end
+    end
+end
 
 --------------------------------------------------
---// TOGGLE AUTO BUY
+--// TOGGLE AUTO SELL
 --------------------------------------------------
-local AutoBuyToggle = MainTab:Toggle({
-    Title = "Auto Buy Event Merchant",
-    Desc = "Auto beli Slot 1 - 3",
+local AutoSellToggle = MainTab:Toggle({
+    Title = "Auto Sell",
+    Desc = "Auto Sell All Ores",
     Default = false,
     Callback = function(state)
-        AutoBuy = state
+        AutoSell = state
         if state then
             task.spawn(function()
-                while AutoBuy do
-                    Buy("Slot1")
-                    task.wait(0.3)
-                    Buy("Slot2")
-                    task.wait(0.3)
-                    Buy("Slot3")
+                while AutoSell do
+                    Sell()
+                    task.wait(5)
+                end
+            end)
+        end
+    end
+})
+
+MainTab:Space()
+--------------------------------------------------
+--// DROPDOWN AND TOGGLE AUTO REBIRTH
+--------------------------------------------------
+local RebirthMap = {
+    ["1"] = 1,
+    ["5"] = 2,
+    ["20"] = 3,
+    ["50"] = 4,
+    ["100"] = 5,
+    ["250"] = 6,
+    ["500"] = 7,
+    ["1K"] = 8,
+    ["2.5K"] = 9,
+    ["5K"] = 10,
+    ["10K"] = 11,
+    ["25K"] = 12,
+    ["50K"] = 13,
+    ["100K"] = 14,
+    ["250K"] = 15,
+    ["500K"] = 16,
+    ["1M"] = 17,
+    ["2.5M"] = 18,
+    ["10M"] = 19,
+    ["25M"] = 20,
+    ["100M"] = 21,
+    ["1B"] = 22,
+    ["50B"] = 23,
+    ["500B"] = 24,
+    ["5T"] = 25,
+    ["100T"] = 26,
+    ["1Qd"] = 27,
+    ["50Qd"] = 28,
+    ["500Qd"] = 29,
+    ["2.5Qn"] = 30,
+    ["50Qn"] = 31,
+    ["500Qn"] = 32,
+    ["5Sx"] = 33,
+    ["100Sx"] = 34,
+    ["1Sp"] = 35,
+    ["50Sp"] = 36,
+    ["500Sp"] = 37,
+    ["25Oc"] = 38,
+    ["500Oc"] = 39,
+    ["25No"] = 40,
+    ["500No"] = 41,
+    ["25De"] = 42,
+    ["500De"] = 43,
+    ["25UDe"] = 44,
+    ["500UDe"] = 45,
+    ["25DDe"] = 46,
+    ["500DDe"] = 47,
+}
+
+local RebirthLabels = {}
+for label in pairs(RebirthMap) do
+    table.insert(RebirthLabels, label)
+end
+
+table.sort(RebirthLabels, function(a, b)
+    return RebirthMap[a] < RebirthMap[b]
+end)
+
+MainTab:Dropdown({
+    Title = "Rebirth Amount",
+    Desc = "Tampilan K / M (value asli hidden)",
+    Values = RebirthLabels,
+    Value = "",
+    Multi = false,
+    AllowNone = false,
+    Callback = function(label)
+        SelectedRebirth = RebirthMap[label]
+    end
+})
+
+MainTab:Toggle({
+    Title = "Auto Rebirth",
+    Desc = "Auto rebirth sesuai amount",
+    Default = false,
+    Callback = function(state)
+        AutoRebirth = state
+        if state then
+            task.spawn(function()
+                while AutoRebirth do
+                    Rebirth(SelectedRebirth)
                     task.wait(1)
                 end
             end)
@@ -145,6 +310,7 @@ local AutoBuyToggle = MainTab:Toggle({
     end
 })
 
+MainTab:Space()
 --------------------------------------------------
 --// TOGGLE AUTO CLAIM TIME REWARD
 --------------------------------------------------
@@ -165,11 +331,99 @@ local AutoClaimToggle = MainTab:Toggle({
     end
 })
 
+MainTab:Space()
+--------------------------------------------------
+--// TOGGLE AUTO CLAIM LUCKY BLOCK
+--------------------------------------------------
+MainTab:Toggle({
+    Title = "Auto Claim Lucky Block",
+    Desc = "Auto claim semua LuckyBlock di map",
+    Default = false,
+    Callback = function(state)
+        AutoLuckyBlock = state
+        if state then
+            task.spawn(function()
+                while AutoLuckyBlock do
+                    ClaimAllLuckyBlocks()
+                    task.wait(0.3) -- aman & stabil
+                end
+            end)
+        end
+    end
+})
+
+MainTab:Space()
+--------------------------------------------------
+--// TOGGLE AUTO BUY
+--------------------------------------------------
+local AutoBuyToggle = MainTab:Toggle({
+    Title = "Auto Buy Merchant",
+    Desc = "Auto beli Slot 1 - 3",
+    Default = false,
+    Callback = function(state)
+        AutoBuy = state
+        if state then
+            task.spawn(function()
+                while AutoBuy do
+                    Buy("Slot1")
+                    task.wait(0.3)
+                    Buy("Slot2")
+                    task.wait(0.3)
+                    Buy("Slot3")
+                    task.wait(1)
+                end
+            end)
+        end
+    end
+})
+
+MainTab:Space()
+--------------------------------------------------
+--// TOGGLE AUTO BUY PICKAXE
+--------------------------------------------------
+local AutoBuyPickaxeToggle = MainTab:Toggle({
+    Title = "Auto Buy Pickaxe",
+    Desc = "Auto Upgrade Pickaxe",
+    Default = false,
+    Callback = function(state)
+        AutoBuyPickaxe = state
+        if state then
+            task.spawn(function()
+                while AutoBuyPickaxe do
+                    BuyPickaxe()
+                    task.wait(5)
+                end
+            end)
+        end
+    end
+})
+
+MainTab:Space()
+--------------------------------------------------
+--// TOGGLE AUTO BUY MINER
+--------------------------------------------------
+local AutoBuyMinerToggle = MainTab:Toggle({
+    Title = "Auto Buy Miner",
+    Desc = "Auto Upgrade Miner",
+    Default = false,
+    Callback = function(state)
+        AutoBuyMiner = state
+        if state then
+            task.spawn(function()
+                while AutoBuyMiner do
+                    BuyMiner()
+                    task.wait(5)
+                end
+            end)
+        end
+    end
+})
+
 
 --------------------------------------------------
 --// TOGGLE AUTO ROLL
 --------------------------------------------------
-local AutoRollToggle = MainTab:Toggle({
+local AutoRollToggle = EventTab:Toggle({
     Title = "Auto Roll",
     Desc = "Auto roll terus",
     Default = false,
@@ -186,10 +440,36 @@ local AutoRollToggle = MainTab:Toggle({
     end
 })
 
+EventTab:Space()
+--------------------------------------------------
+--// TOGGLE AUTO BUY EVENT
+--------------------------------------------------
+local AutoBuyEventToggle = EventTab:Toggle({
+    Title = "Auto Buy Event Merchant",
+    Desc = "Auto beli Slot 1 - 3",
+    Default = false,
+    Callback = function(state)
+        AutoBuyEvent = state
+        if state then
+            task.spawn(function()
+                while AutoBuyEvent do
+                    BuyEvent("Slot1")
+                    task.wait(0.3)
+                    BuyEvent("Slot2")
+                    task.wait(0.3)
+                    BuyEvent("Slot3")
+                    task.wait(1)
+                end
+            end)
+        end
+    end
+})
+
+EventTab:Space()
 --------------------------------------------------
 --// TOGGLE AUTO CLAIM DICE CHEST
 --------------------------------------------------
-local AutoChestToggle = MainTab:Toggle({
+local AutoChestToggle = EventTab:Toggle({
     Title = "Auto Claim Dice Chest",
     Desc = "Auto claim Dice Chest",
     Default = false,
@@ -206,11 +486,11 @@ local AutoChestToggle = MainTab:Toggle({
     end
 })
 
-
+EventTab:Space()
 --------------------------------------------------
 --// DROPDOWN AND TOGGLE AUTO UPGRADE
 --------------------------------------------------
-MainTab:Dropdown({
+EventTab:Dropdown({
     Title = "Event Upgrades",
     Desc = "Pilih upgrade event",
     Values = {
@@ -231,7 +511,7 @@ MainTab:Dropdown({
 })
 
 
-MainTab:Toggle({
+EventTab:Toggle({
     Title = "Auto Event Upgrade",
     Desc = "Auto upgrade sesuai pilihan",
     Default = false,
@@ -251,10 +531,11 @@ MainTab:Toggle({
     end
 })
 
+EventTab:Space()
 --------------------------------------------------
 --// DROPDOWN AND TOGGLE AUTO CRAFT
 --------------------------------------------------
-MainTab:Dropdown({
+EventTab:Dropdown({
     Title = "Craft Dice Selection",
     Desc = "Pilih dice yang mau di-craft",
     Values = {
@@ -276,7 +557,7 @@ MainTab:Dropdown({
     end
 })
 
-MainTab:Toggle({
+EventTab:Toggle({
     Title = "Auto Craft Dice",
     Desc = "Auto craft dice terpilih",
     Default = false,
@@ -297,8 +578,54 @@ MainTab:Toggle({
     end
 })
 
+EventTab:Space()
+
+--------------------------------------------------
+--// TOGGLE ANTI AFK
+--------------------------------------------------
+MiscTab:Toggle({
+    Title = "Anti AFK",
+    Desc = "Anti Kick Idle 20 menit",
+    Value = false,
+    Callback = function(v)
+        AntiAFK = v
+
+        if v then
+            if not IdleConn then
+                IdleConn = LocalPlayer.Idled:Connect(function()
+                    -- cancel roblox idle
+                    VirtualUser:Button2Down(Vector2.new(0,0), Camera.CFrame)
+                    task.wait(0.2)
+                    VirtualUser:Button2Up(Vector2.new(0,0), Camera.CFrame)
+                end)
+            end
+        else
+            if IdleConn then
+                IdleConn:Disconnect()
+                IdleConn = nil
+            end
+        end
+    end
+})
+
+--// INPUT LOOP (INI KUNCI UTAMA)
+task.spawn(function()
+    while task.wait(60) do -- < 900 detik AMAN
+        if not AntiAFK then continue end
+
+        -- fake key (InputBegan TERPICU)
+        VIM:SendKeyEvent(true, Enum.KeyCode.Unknown, false, game)
+        task.wait(0.05)
+        VIM:SendKeyEvent(false, Enum.KeyCode.Unknown, false, game)
+    end
+end)
+
 task.defer(function()
-    AutoBuyToggle:Set(true)
+    AutoBuyToggle:Set(false)
+    AutoSellToggle:Set(false)
+    AutoBuyPickaxeToggle:Set(false)
+    AutoBuyMinerToggle:Set(false)
+    AutoBuyEventToggle:Set(true)
     AutoClaimToggle:Set(true)
     AutoRollToggle:Set(true)
     AutoChestToggle:Set(true)
@@ -306,4 +633,3 @@ task.defer(function()
     -- AutoEventUpgradeToggle
     -- AutoCraftToggle
 end)
-
