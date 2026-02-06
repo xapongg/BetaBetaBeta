@@ -87,7 +87,8 @@ local AutoMiner = false
 local AutoBuyEvent = false
 local AutoClaimTime = false
 local AutoRoll = false
-local AutoChest = false
+local AutoDiceChest = false
+local AutoDailyChest = false
 local AutoEventUpgrade = false
 local SelectedUpgrades = {}
 local AutoCraft = false
@@ -145,6 +146,12 @@ end
 local function BuyEvent(slot)
     pcall(function()
         Remote:InvokeServer("Buy Event Merchant", slot)
+    end)
+end
+
+local function ClaimDailyChest()
+    pcall(function()
+        Remote:InvokeServer("Claim Chest", "DailyChest")
     end)
 end
 
@@ -335,7 +342,7 @@ MainTab:Space()
 --------------------------------------------------
 --// TOGGLE AUTO CLAIM LUCKY BLOCK
 --------------------------------------------------
-MainTab:Toggle({
+local AutoClaimLuckyBlock = MainTab:Toggle({
     Title = "Auto Claim Lucky Block",
     Desc = "Auto claim semua LuckyBlock di map",
     Default = false,
@@ -419,6 +426,26 @@ local AutoBuyMinerToggle = MainTab:Toggle({
     end
 })
 
+MainTab:Space()
+--------------------------------------------------
+--// TOGGLE AUTO DAILY CHEST
+--------------------------------------------------
+local AutoDailyChestToggle = MainTab:Toggle({
+    Title = "Auto Claim Daily Chest",
+    Desc = "Auto Claim Daiy Chest",
+    Default = false,
+    Callback = function(state)
+        AutoDailyChest = state
+        if state then
+            task.spawn(function()
+                while AutoDailyChest do
+                    ClaimDailyChest()
+                    task.wait(10)
+                end
+            end)
+        end
+    end
+})
 
 --------------------------------------------------
 --// TOGGLE AUTO ROLL
@@ -469,15 +496,15 @@ EventTab:Space()
 --------------------------------------------------
 --// TOGGLE AUTO CLAIM DICE CHEST
 --------------------------------------------------
-local AutoChestToggle = EventTab:Toggle({
+local AutoDiceChestToggle = EventTab:Toggle({
     Title = "Auto Claim Dice Chest",
     Desc = "Auto claim Dice Chest",
     Default = false,
     Callback = function(state)
-        AutoChest = state
+        AutoDiceChest = state
         if state then
             task.spawn(function()
-                while AutoChest do
+                while AutoDiceChest do
                     ClaimDiceChest()
                     task.wait(10)
                 end
@@ -583,7 +610,7 @@ EventTab:Space()
 --------------------------------------------------
 --// TOGGLE ANTI AFK
 --------------------------------------------------
-MiscTab:Toggle({
+local AntiAFKToggle = MiscTab:Toggle({
     Title = "Anti AFK",
     Desc = "Anti Kick Idle 20 menit",
     Value = false,
@@ -621,14 +648,17 @@ task.spawn(function()
 end)
 
 task.defer(function()
-    AutoBuyToggle:Set(false)
+    AutoBuyToggle:Set(true)
     AutoSellToggle:Set(false)
     AutoBuyPickaxeToggle:Set(false)
     AutoBuyMinerToggle:Set(false)
     AutoBuyEventToggle:Set(true)
     AutoClaimToggle:Set(true)
-    AutoRollToggle:Set(true)
-    AutoChestToggle:Set(true)
+    AutoRollToggle:Set(false)
+    AutoDiceChestToggle:Set(true)
+    AutoDailyChestToggle:Set(true)
+    AntiAFKToggle:Set(true)
+    AutoClaimLuckyBlock:Set(true)
     -- sengaja TIDAK:
     -- AutoEventUpgradeToggle
     -- AutoCraftToggle
