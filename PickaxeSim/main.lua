@@ -83,12 +83,15 @@ local AutoSell = false
 local AutoRebirth = false
 local SelectedRebirth = 1
 local AutoPickaxe = false
+local AutoMineResetUpgrade = false
+local AutoUnlockNextWorld = false
 local AutoMiner = false
 local AutoBuyEvent = false
 local AutoClaimTime = false
 local AutoRoll = false
 local AutoDiceChest = false
 local AutoDailyChest = false
+local AutoJungleChest = false
 local AutoEventUpgrade = false
 local SelectedUpgrades = {}
 local AutoCraft = false
@@ -149,9 +152,27 @@ local function BuyEvent(slot)
     end)
 end
 
+local function BuyMineResetUpgrade()
+    pcall(function()
+        Remote:InvokeServer("Buy MineReset Upgrade")
+    end)
+end
+
+local function BuyUnlockNextWorld()
+    pcall(function()
+        Remote:InvokeServer("Unlock Next World")
+    end)
+end
+
 local function ClaimDailyChest()
     pcall(function()
         Remote:InvokeServer("Claim Chest", "DailyChest")
+    end)
+end
+
+local function ClaimJungleChest()
+    pcall(function()
+        Remote:InvokeServer("Claim Chest", "JungleChest")
     end)
 end
 
@@ -447,6 +468,80 @@ local AutoDailyChestToggle = MainTab:Toggle({
     end
 })
 
+MainTab:Space()
+--------------------------------------------------
+--// TOGGLE AUTO JUNGLE CHEST
+--------------------------------------------------
+local AutoJungleChestToggle = MainTab:Toggle({
+    Title = "Auto Claim Jungle Chest",
+    Desc = "Auto Claim Jungle Chest",
+    Default = false,
+    Callback = function(state)
+        AutoJungleChest = state
+        if state then
+            task.spawn(function()
+                while AutoJungleChest do
+                    ClaimJungleChest()
+                    task.wait(10)
+                end
+            end)
+        end
+    end
+})
+
+MainTab:Space()
+--------------------------------------------------
+--// TOGGLE AUTO BUY MineResetUpgrade
+--------------------------------------------------
+local AutoBuyMineResetUpgradeToggle = MainTab:Toggle({
+    Title = "Auto Buy MineResetUpgrade",
+    Desc = "Auto Upgrade MineResetUpgrade",
+    Default = false,
+    Callback = function(state)
+        AutoBuyMineResetUpgrade = state
+        if state then
+            task.spawn(function()
+                while AutoBuyMineResetUpgrade do
+                    BuyMineResetUpgrade()
+                    task.wait(5)
+                end
+            end)
+        end
+    end
+})
+
+MainTab:Space()
+--------------------------------------------------
+--// TOGGLE AUTO BUY UnlockNextWorld
+--------------------------------------------------
+local AutoBuyUnlockNextWorldToggle = MainTab:Toggle({
+    Title = "Auto Buy UnlockNextWorld",
+    Desc = "Auto Upgrade UnlockNextWorld",
+    Default = false,
+    Callback = function(state)
+        AutoBuyUnlockNextWorld = state
+        if state then
+            task.spawn(function()
+                while AutoBuyUnlockNextWorld do
+                    BuyUnlockNextWorld()
+                    task.wait(5)
+                end
+            end)
+        end
+    end
+})
+
+MainTab:Space()
+
+
+
+
+
+
+
+
+
+
 --------------------------------------------------
 --// TOGGLE AUTO ROLL
 --------------------------------------------------
@@ -652,13 +747,18 @@ task.defer(function()
     AutoSellToggle:Set(false)
     AutoBuyPickaxeToggle:Set(false)
     AutoBuyMinerToggle:Set(false)
+    AutoDailyChestToggle:Set(true)
+    AutoJungleChestToggle:Set(true)
+    AntiAFKToggle:Set(true)
+    AutoClaimLuckyBlock:Set(true)
+    AutoBuyMineResetUpgradeToggle:Set(true)
+    AutoBuyUnlockNextWorldToggle:Set(true)
+
+    --//Eventttt
     AutoBuyEventToggle:Set(true)
     AutoClaimToggle:Set(true)
     AutoRollToggle:Set(false)
     AutoDiceChestToggle:Set(true)
-    AutoDailyChestToggle:Set(true)
-    AntiAFKToggle:Set(true)
-    AutoClaimLuckyBlock:Set(true)
     -- sengaja TIDAK:
     -- AutoEventUpgradeToggle
     -- AutoCraftToggle
