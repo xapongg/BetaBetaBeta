@@ -1,4 +1,10 @@
 --// Services
+local Players = game:GetService("Players")
+local VirtualUser = game:GetService("VirtualUser")
+local VIM = game:GetService("VirtualInputManager")
+local UIS = game:GetService("UserInputService")
+local LocalPlayer = Players.LocalPlayer
+local Camera = workspace.CurrentCamera
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 --// Wind UI
@@ -50,6 +56,7 @@ Window:EditOpenButton({
 
 --// Tab
 local MainTab = Window:Tab({ Title = "Main", Icon = "home" })
+local MiscTab = Window:Tab({Title = "Misc", Icon = "settings"})
 
 --// =========================
 --// AUTO COLLECT CARDS
@@ -153,3 +160,46 @@ MainTab:Toggle({
         end)
     end
 })
+
+--------------------------------------------------
+--// TOGGLE ANTI AFK
+--------------------------------------------------
+local AntiAFK = false
+local IdleConn
+
+local AntiAFKToggle = MiscTab:Toggle({
+    Title = "Anti AFK",
+    Desc = "Anti Kick Idle 20 menit",
+    Value = false,
+    Callback = function(v)
+        AntiAFK = v
+
+        if v then
+            if not IdleConn then
+                IdleConn = LocalPlayer.Idled:Connect(function()
+                    -- cancel roblox idle
+                    VirtualUser:Button2Down(Vector2.new(0,0), Camera.CFrame)
+                    task.wait(0.2)
+                    VirtualUser:Button2Up(Vector2.new(0,0), Camera.CFrame)
+                end)
+            end
+        else
+            if IdleConn then
+                IdleConn:Disconnect()
+                IdleConn = nil
+            end
+        end
+    end
+})
+
+--// INPUT LOOP (INI KUNCI UTAMA)
+task.spawn(function()
+    while task.wait(60) do -- < 900 detik AMAN
+        if not AntiAFK then continue end
+
+        -- fake key (InputBegan TERPICU)
+        VIM:SendKeyEvent(true, Enum.KeyCode.Unknown, false, game)
+        task.wait(0.05)
+        VIM:SendKeyEvent(false, Enum.KeyCode.Unknown, false, game)
+    end
+end)
