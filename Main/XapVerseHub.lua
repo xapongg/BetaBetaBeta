@@ -8,6 +8,7 @@ local GameList = {
 local PlaceList = {
     [79657240466394] = "https://raw.githubusercontent.com/xapongg/XapVerseHub/main/ContainerRNG/main.lua",
     [82013336390273] = "https://raw.githubusercontent.com/xapongg/XapVerseHub/main/PickaxeSim/main.lua",
+    [76285745979410] = "https://raw.githubusercontent.com/xapongg/XapVerseHub/refs/heads/main/Anime%20Card%20Collection/main.lua",
 }
 
 local scriptURL =
