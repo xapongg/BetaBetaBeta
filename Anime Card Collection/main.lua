@@ -70,7 +70,7 @@ local CardRemote = ReplicatedStorage
 
 MainTab:Toggle({
     Title = "Auto Collect Cards",
-    Desc = "Auto collect card slot 1 - 9",
+    Desc = "Auto collect card slot 1 - 9 (Left & Right)",
     Value = false,
     Callback = function(v)
         AutoCollectCards = v
@@ -81,29 +81,36 @@ MainTab:Toggle({
                 local plot = workspace.Plots:FindFirstChild(PLOT_ID)
                 if not plot then task.wait(0.5) continue end
 
-                local left = plot:FindFirstChild("Map")
+                local display = plot:FindFirstChild("Map")
                     and plot.Map:FindFirstChild("Display")
-                    and plot.Map.Display:FindFirstChild("Left")
 
-                if not left then task.wait(0.5) continue end
+                if not display then task.wait(0.5) continue end
 
-                for i = 1, 9 do
-                    if not AutoCollectCards then break end
+                -- 🔥 collect kiri & kanan
+                for _, sideName in ipairs({"Left", "Right"}) do
+                    local side = display:FindFirstChild(sideName)
+                    if side then
+                        for i = 1, 9 do
+                            if not AutoCollectCards then break end
 
-                    local card = left:FindFirstChild(tostring(i))
-                    if card then
-                        pcall(function()
-                            CardRemote:FireServer("Collect", card)
-                        end)
-                        task.wait(0.1)
+                            local card = side:FindFirstChild(tostring(i))
+                            if card then
+                                task.spawn(function()
+                                    pcall(function()
+                                        CardRemote:FireServer("Collect", card)
+                                    end)
+                                end)
+                            end
+                        end
                     end
                 end
 
-                task.wait(0.3)
+                task.wait(0.35)
             end
         end)
     end
 })
+
 
 --// =========================
 --// AUTO COLLECT TRAVEL COIN
@@ -203,3 +210,4 @@ task.spawn(function()
         VIM:SendKeyEvent(false, Enum.KeyCode.Unknown, false, game)
     end
 end)
+
