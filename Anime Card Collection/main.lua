@@ -173,24 +173,24 @@ MainTab:Space()
 local SelectedPacks = {}
 
 local PackList = {
-    "Bizarre",
-    "Chainsaw",
-    "Clover",
+    "Pirate",
+    "Ninja",
+    "Soul",
+    "Slayer",
+    "Sorcerer",
     "Dragon",
-    "Ego",
     "Fire",
-    "Flight",
-    "Geass",
-    "Ghoul",
     "Hero",
     "Hunter",
-    "Ninja",
-    "Pirate",
-    "Slayer",
     "Solo",
-    "Sorcerer",
-    "Soul",
-    "Titan"
+    "Titan",
+    "Chainsaw",
+    "Flight",
+    "Ego",
+    "Clover",
+    "Ghoul",
+    "Geass",
+    "Bizarre"
 }
 
 MainTab:Dropdown({
