@@ -168,6 +168,108 @@ MainTab:Toggle({
     end
 })
 
+MainTab:Space()
+
+local SelectedPacks = {}
+
+local PackList = {
+    "Bizarre",
+    "Chainsaw",
+    "Clover",
+    "Dragon",
+    "Ego",
+    "Fire",
+    "Flight",
+    "Geass",
+    "Ghoul",
+    "Hero",
+    "Hunter",
+    "Ninja",
+    "Pirate",
+    "Slayer",
+    "Solo",
+    "Sorcerer",
+    "Soul",
+    "Titan"
+}
+
+MainTab:Dropdown({
+    Title = "Select Packs",
+    Multi = true,
+    Values = PackList,
+    Callback = function(v)
+        SelectedPacks = v
+    end
+})
+
+local AutoBuyPack = false
+local CardRemote = game:GetService("ReplicatedStorage").Remotes.Card
+
+MainTab:Toggle({
+    Title = "Auto Buy Pack",
+    Desc = "Auto buy pack by name (skip pack id)",
+    Value = false,
+    Callback = function(v)
+        AutoBuyPack = v
+        if not v then return end
+
+        task.spawn(function()
+            while AutoBuyPack do
+                for _, folder in ipairs(workspace.Client.Packs:GetChildren()) do
+                    for _, pack in ipairs(folder:GetChildren()) do
+                        if table.find(SelectedPacks, pack.Name) then
+                            pcall(function()
+                                CardRemote:FireServer(
+                                    "BuyPack",
+                                    folder.Name -- pack id random
+                                )
+                            end)
+                            task.wait(0.25)
+                        end
+                    end
+                end
+                task.wait(0.6)
+            end
+        end)
+    end
+})
+
+local AutoPlace = false
+local CardRemote = game:GetService("ReplicatedStorage").Remotes.Card
+
+MainTab:Toggle({
+    Title = "Auto Equip & Place Card",
+    Desc = "Awas Ngeframe NGENTOT",
+    Value = false,
+    Callback = function(v)
+        AutoPlace = v
+        if not v then return end
+
+        task.spawn(function()
+            while AutoPlace do
+                for _, cardName in ipairs(SelectedPacks) do
+                    if not AutoPlace then break end
+
+                    -- Equip dulu
+                    pcall(function()
+                        CardRemote:FireServer("Equip", cardName)
+                    end)
+
+                    task.wait(0.15)
+
+                    -- Place ke Floor
+                    pcall(function()
+                        CardRemote:FireServer("Place", cardName)
+                    end)
+
+                    task.wait(0.25)
+                end
+                task.wait(0.6)
+            end
+        end)
+    end
+})
+
 --------------------------------------------------
 --// TOGGLE ANTI AFK
 --------------------------------------------------
@@ -210,4 +312,3 @@ task.spawn(function()
         VIM:SendKeyEvent(false, Enum.KeyCode.Unknown, false, game)
     end
 end)
-
