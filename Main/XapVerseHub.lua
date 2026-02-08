@@ -22,6 +22,6 @@ else
     LocalPlayer:Kick(
         "XapVerseHub ❌\n" ..
         "Game ini belum ada di list.\n" ..
-        "Cek Discord untuk update terbaru."
+        "Cek Discord untuk update terbaru.."
     )
 end
